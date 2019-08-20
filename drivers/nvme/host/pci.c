@@ -2916,7 +2916,7 @@ static int nvme_simple_suspend(struct device *dev)
 	struct nvme_dev *ndev = pci_get_drvdata(to_pci_dev(dev));
 	struct nvme_ctrl *ctrl = &ndev->ctrl;
 
-        if (!(pm_suspend_via_s2idle() && (ctrl->quirks & NVME_QUIRK_NO_DISABLE)))
+        if (!(pm_suspend_default_s2idle() && (ctrl->quirks & NVME_QUIRK_NO_DISABLE)))
 		nvme_dev_disable(ndev, true);
 
 	return 0;
