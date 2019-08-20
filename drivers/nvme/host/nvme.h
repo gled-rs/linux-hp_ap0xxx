@@ -83,6 +83,11 @@ enum nvme_quirks {
 	 */
 	NVME_QUIRK_MEDIUM_PRIO_SQ		= (1 << 7),
 
+        /*
+	 * Do not disable nvme when suspending(s2idle)
+	 */
+	NVME_QUIRK_NO_DISABLE			= (1 << 8),
+
 	/*
 	 * Ignore device provided subnqn.
 	 */
