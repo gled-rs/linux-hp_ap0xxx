@@ -1,3 +1,31 @@
+About this kernel:
+
+This is not an official maintained kernel, just a convenience repository for the time for the patches included to be included upstream. Use at your own risks !
+
+This is based on https://github.com/thesofproject/linux/commits/topic/sof-dev for supporting the spectre x360 ap0xxxx digital mic array with merges from linux-stable upstream. 
+Also added a patch to hid-sensor ( https://lkml.org/lkml/2019/3/8/2 ) to allow the accelerometer sensor to work ( fix autorotation )
+And added a patch to the nvme driver ( https://bugs.launchpad.net/ubuntu/+source/linux/+bug/1801875 ) to prevent the hynix drive to enter suspend ( bug in the drive firmware that cause extra power consumption in s2idle suspend mode  )
+
+A default archlinux config is included with the kernel along with mkinitcpio preset.
+
+To compile:
+
+git clone https://github.com/gled-rs/linux-hp_ap0xxx;
+
+cd linux-hp_ap0xxx;
+
+make -j9 # if you have 8 cores... adapt the number to your cores + 1;
+
+cp arch/x86_64/boot/bzImage //boot/vmlinux-sof;
+
+make modules_install;
+
+cp mkinitcpio-ap0xxxx.preset /etc/mkinitcpio.d/linux-ap0xxxx.preset;
+
+mkinitcpio -p linux-ap0xxxx;
+
+grub-mkconfig -o /boot/grub/grub.cfg;
+
 Linux kernel
 ============
 
