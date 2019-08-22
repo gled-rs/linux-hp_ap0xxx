@@ -15,7 +15,7 @@
 #include <scsi/scsi_eh.h>
 #include <scsi/scsi_dbg.h>
 
-#define SCSI_LOG_SPOOLSIZE 4096
+#define SCSI_LOG_SPOOLSIZE SCSI_LOG_BUFSIZE
 
 #if (SCSI_LOG_SPOOLSIZE / SCSI_LOG_BUFSIZE) > BITS_PER_LONG
 #warning SCSI logging bitmask too large
