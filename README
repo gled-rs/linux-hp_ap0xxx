@@ -16,7 +16,7 @@ cd linux-hp_ap0xxx;
 
 make -j9 # if you have 8 cores... adapt the number to your cores + 1;
 
-cp arch/x86_64/boot/bzImage //boot/vmlinux-sof;
+cp arch/x86_64/boot/bzImage //boot/vmlinuz-linux-ap0xxxx;
 
 make modules_install;
 
