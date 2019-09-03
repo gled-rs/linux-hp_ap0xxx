@@ -1,4 +1,5 @@
-About this kernel:
+About this kernel
+==================
 
 This is not an official maintained kernel, just a convenience repository for the time for the patches included to be included upstream. Use at your own risks !
 
@@ -12,26 +13,41 @@ It can be also useful for pulseaudio to know about the card mic ( load-module mo
 
 Tested and working on an 'HP Spectre x360 Convertible 13-ap0xxx'.
 
-A default archlinux config is included with the kernel along with mkinitcpio preset.
+The default config was generated with make localmodconfig, it is very minimal and tailored for a barebone x360, so probably miss drivers you may needi, but compile faster. See below to use a default archlinux config instead.
 
-To compile:
+To compile
+==========
 
 git clone https://github.com/gled-rs/linux-hp_ap0xxx;
 
 cd linux-hp_ap0xxx;
 
-make -j9 # if you have 8 cores... adapt the number to your cores + 1;
-
-cp arch/x86_64/boot/bzImage //boot/vmlinuz-linux-ap0xxxx;
-
-make modules_install;
+cp default-arch-config .config; # optional, only if you want to use the default Archlinux config ( more modules compiled, try this if you have unsupported hardware missing drivers ).
 
 cp mkinitcpio-ap0xxxx.preset /etc/mkinitcpio.d/linux-ap0xxxx.preset;
 
-mkinitcpio -p linux-ap0xxxx;
+make -j9; # if you have 8 cores... adapt the number to your cores + 1;
 
-grub-mkconfig -o /boot/grub/grub.cfg;
+sudo cp arch/x86_64/boot/bzImage /boot/vmlinuz-linux-ap0xxxx;
 
+sudo make modules_install;
+
+sudo mkinitcpio -p linux-ap0xxxx;
+
+sudo grub-mkconfig -o /boot/grub/grub.cfg;
+
+To update
+=========
+
+git pull
+
+make -j9
+
+sudo cp arch/x86_64/boot/bzImage //boot/vmlinuz-linux-ap0xxxx;
+
+sudo make modules_install;
+
+sudo mkinitcpio -p linux-ap0xxxx;
 
 Linux kernel
 ============
