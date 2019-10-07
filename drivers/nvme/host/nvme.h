@@ -226,6 +226,7 @@ struct nvme_ctrl {
 	u16 oacs;
 	u16 nssa;
 	u16 nr_streams;
+	u16 sqsize;
 	u32 max_namespaces;
 	atomic_t abort_limit;
 	u8 vwc;
@@ -274,7 +275,6 @@ struct nvme_ctrl {
 	u16 hmmaxd;
 
 	/* Fabrics only */
-	u16 sqsize;
 	u32 ioccsz;
 	u32 iorcsz;
 	u16 icdoff;
