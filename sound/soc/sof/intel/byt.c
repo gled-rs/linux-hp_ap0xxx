@@ -17,6 +17,7 @@
 #include <sound/sof/xtensa.h>
 #include "../ops.h"
 #include "shim.h"
+#include "../sof-audio.h"
 
 /* DSP memories */
 #define IRAM_OFFSET		0x0C0000
@@ -145,33 +146,33 @@ static void byt_dump(struct snd_sof_dev *sdev, u32 flags)
 	struct sof_ipc_dsp_oops_xtensa xoops;
 	struct sof_ipc_panic_info panic_info;
 	u32 stack[BYT_STACK_DUMP_SIZE];
-	u32 status, panic, imrd, imrx;
+	u64 status, panic, imrd, imrx;
 
 	/* now try generic SOF status messages */
-	status = snd_sof_dsp_read(sdev, BYT_DSP_BAR, SHIM_IPCD);
-	panic = snd_sof_dsp_read(sdev, BYT_DSP_BAR, SHIM_IPCX);
+	status = snd_sof_dsp_read64(sdev, BYT_DSP_BAR, SHIM_IPCD);
+	panic = snd_sof_dsp_read64(sdev, BYT_DSP_BAR, SHIM_IPCX);
 	byt_get_registers(sdev, &xoops, &panic_info, stack,
 			  BYT_STACK_DUMP_SIZE);
 	snd_sof_get_status(sdev, status, panic, &xoops, &panic_info, stack,
 			   BYT_STACK_DUMP_SIZE);
 
 	/* provide some context for firmware debug */
-	imrx = snd_sof_dsp_read(sdev, BYT_DSP_BAR, SHIM_IMRX);
-	imrd = snd_sof_dsp_read(sdev, BYT_DSP_BAR, SHIM_IMRD);
+	imrx = snd_sof_dsp_read64(sdev, BYT_DSP_BAR, SHIM_IMRX);
+	imrd = snd_sof_dsp_read64(sdev, BYT_DSP_BAR, SHIM_IMRD);
 	dev_err(sdev->dev,
-		"error: ipc host -> DSP: pending %s complete %s raw 0x%8.8x\n",
+		"error: ipc host -> DSP: pending %s complete %s raw 0x%llx\n",
 		(panic & SHIM_IPCX_BUSY) ? "yes" : "no",
 		(panic & SHIM_IPCX_DONE) ? "yes" : "no", panic);
 	dev_err(sdev->dev,
-		"error: mask host: pending %s complete %s raw 0x%8.8x\n",
+		"error: mask host: pending %s complete %s raw 0x%llx\n",
 		(imrx & SHIM_IMRX_BUSY) ? "yes" : "no",
 		(imrx & SHIM_IMRX_DONE) ? "yes" : "no", imrx);
 	dev_err(sdev->dev,
-		"error: ipc DSP -> host: pending %s complete %s raw 0x%8.8x\n",
+		"error: ipc DSP -> host: pending %s complete %s raw 0x%llx\n",
 		(status & SHIM_IPCD_BUSY) ? "yes" : "no",
 		(status & SHIM_IPCD_DONE) ? "yes" : "no", status);
 	dev_err(sdev->dev,
-		"error: mask DSP: pending %s complete %s raw 0x%8.8x\n",
+		"error: mask DSP: pending %s complete %s raw 0x%llx\n",
 		(imrd & SHIM_IMRD_BUSY) ? "yes" : "no",
 		(imrd & SHIM_IMRD_DONE) ? "yes" : "no", imrd);
 
@@ -382,6 +383,32 @@ static int byt_reset(struct snd_sof_dev *sdev)
 	return 0;
 }
 
+static void byt_machine_select(struct snd_sof_dev *sdev)
+{
+	struct snd_sof_pdata *sof_pdata = sdev->pdata;
+	const struct sof_dev_desc *desc = sof_pdata->desc;
+	struct snd_soc_acpi_mach *mach;
+
+	mach = snd_soc_acpi_find_machine(desc->machines);
+	if (!mach) {
+		dev_warn(sdev->dev, "warning: No matching ASoC machine driver found\n");
+		return;
+	}
+
+	sof_pdata->tplg_filename = mach->sof_tplg_filename;
+	mach->mach_params.acpi_ipc_irq_index = desc->irqindex_host_ipc;
+	sof_pdata->machine = mach;
+}
+
+static void byt_set_mach_params(const struct snd_soc_acpi_mach *mach,
+				struct device *dev)
+{
+	struct snd_soc_acpi_mach_params *mach_params;
+
+	mach_params = (struct snd_soc_acpi_mach_params *)&mach->mach_params;
+	mach_params->platform = dev_name(dev);
+}
+
 /* Baytrail DAIs */
 static struct snd_soc_dai_driver byt_dai[] = {
 {
@@ -513,6 +540,12 @@ const struct snd_sof_dsp_ops sof_tng_ops = {
 
 	.ipc_msg_data	= intel_ipc_msg_data,
 	.ipc_pcm_params	= intel_ipc_pcm_params,
+
+	/* machine driver */
+	.machine_select = byt_machine_select,
+	.machine_register = sof_machine_register,
+	.machine_unregister = sof_machine_unregister,
+	.set_mach_params = byt_set_mach_params,
 
 	/* debug */
 	.debug_map	= byt_debugfs,
@@ -682,6 +715,12 @@ const struct snd_sof_dsp_ops sof_byt_ops = {
 	.ipc_msg_data	= intel_ipc_msg_data,
 	.ipc_pcm_params	= intel_ipc_pcm_params,
 
+	/* machine driver */
+	.machine_select = byt_machine_select,
+	.machine_register = sof_machine_register,
+	.machine_unregister = sof_machine_unregister,
+	.set_mach_params = byt_set_mach_params,
+
 	/* debug */
 	.debug_map	= byt_debugfs,
 	.debug_map_count	= ARRAY_SIZE(byt_debugfs),
@@ -747,6 +786,12 @@ const struct snd_sof_dsp_ops sof_cht_ops = {
 
 	.ipc_msg_data	= intel_ipc_msg_data,
 	.ipc_pcm_params	= intel_ipc_pcm_params,
+
+	/* machine driver */
+	.machine_select = byt_machine_select,
+	.machine_register = sof_machine_register,
+	.machine_unregister = sof_machine_unregister,
+	.set_mach_params = byt_set_mach_params,
 
 	/* debug */
 	.debug_map	= cht_debugfs,
