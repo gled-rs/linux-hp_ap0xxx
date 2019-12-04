@@ -1,6 +1,13 @@
 About this kernel
 ==================
 
+
+*** Most of this is not needed anymore as of official kernel 5.4.1:
+- sound is supported in mainline now
+- autorotation bug got patched
+- seems like there are also patches for the nvme driver suspend (test in progress)
+ ***
+
 This is not an official maintained kernel, just a convenience repository for the time for the patches included to be included upstream. Use at your own risks !
 
 This is based on https://github.com/thesofproject/linux/commits/topic/sof-dev for supporting the spectre x360 ap0xxxx digital mic array with merges from linux-stable upstream. 
