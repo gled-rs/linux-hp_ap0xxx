@@ -2,10 +2,10 @@ About this kernel
 ==================
 
 
-*** Most of this is not needed anymore as of official kernel 5.4.1:
+*** This is not needed anymore as of official kernel 5.4.1:
 - sound is supported in mainline now
 - autorotation bug got patched
-- seems like there are also patches for the nvme driver suspend (test in progress)
+- Nvme suspend was worked on and seems to be way better (11% loss in 15h )
  ***
 
 This is not an official maintained kernel, just a convenience repository for the time for the patches included to be included upstream. Use at your own risks !
